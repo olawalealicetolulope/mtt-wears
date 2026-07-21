@@ -4,32 +4,28 @@ import Google from "next-auth/providers/google"
 import GitHub from "next-auth/providers/github"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  debug: true, // Keep debug true temporarily so Vercel logs show the exact failure reason
+  debug: true,
   trustHost: true,
   providers: [
     Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientId: "PASTE_YOUR_EXACT_CLIENT_ID_HERE.apps.googleusercontent.com",
+      clientSecret: "PASTE_YOUR_EXACT_CLIENT_SECRET_HERE",
       allowDangerousEmailAccountLinking: true,
     }),
     GitHub({
-      clientId: process.env.GITHUB_CLIENT_ID,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      clientId: process.env.AUTH_GITHUB_ID || process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.AUTH_GITHUB_SECRET || process.env.GITHUB_CLIENT_SECRET,
       allowDangerousEmailAccountLinking: true,
     }),
   ],
   session: { strategy: "jwt" },
   callbacks: {
     async jwt({ token, user }) {
-      if (user) {
-        token.uid = user.id;
-      }
+      if (user) token.uid = user.id;
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.uid = token.uid;
-      }
+      if (session.user) session.user.uid = token.uid;
       return session;
     },
   },
