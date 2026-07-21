@@ -47,17 +47,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       from: process.env.EMAIL_FROM,
     }),
   ],
-  session: { strategy: "jwt" },
+  session: { strategy: "database" }, // <--- Database strategy enabled
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.uid = user.id;
-      }
-      return token;
-    },
-    async session({ session, token }) {
+    // When using the "database" strategy, the session callback receives `user` instead of `token`
+    async session({ session, user }) {
       if (session.user) {
-        session.user.uid = token.uid;
+        session.user.uid = user.id;
       }
       return session;
     },
