@@ -1,7 +1,15 @@
-/** @type {import('next').NextConfig} */
+// /** @type {import('next').NextConfig} */
+// const nextConfig = {
+//   /* config options here */
+//   reactCompiler: true,
+// };
+
+// export default nextConfig;
+/** @type {import('next').Next.js config} */
 const nextConfig = {
-  /* config options here */
-  reactCompiler: true,
+  experimental: {
+    missingSuspenseWithCSRBailout: false,
+  },
 };
 
 export default nextConfig;
