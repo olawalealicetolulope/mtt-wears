@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useState, useEffect, Suspense } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { 
   FiCheckCircle, 
   FiPackage, 
@@ -12,13 +12,13 @@ import {
   FiMapPin,
   FiCreditCard,
   FiLoader
-} from 'react-icons/fi';
-import { db } from '@/lib/firebaseConfig';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+} from "react-icons/fi";
+import { db } from "@/lib/firebaseConfig";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
   const searchParams = useSearchParams();
-  const reference = searchParams.get('reference');
+  const reference = searchParams.get("reference");
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -27,41 +27,40 @@ export default function PaymentSuccessPage() {
   useEffect(() => {
     async function fetchOrderByReference() {
       if (!reference) {
-        setError('No transaction reference found in URL.');
+        setError("No transaction reference found in URL.");
         setLoading(false);
         return;
       }
 
       try {
-        const ordersRef = collection(db, 'orders');
-        const q = query(ordersRef, where('reference', '==', reference));
+        const ordersRef = collection(db, "orders");
+        const q = query(ordersRef, where("reference", "==", reference));
         const querySnapshot = await getDocs(q);
 
         if (!querySnapshot.empty) {
           const docSnap = querySnapshot.docs[0];
           const data = docSnap.data();
 
-          // Format raw data structure cleanly
           const formattedOrder = {
             id: data.reference || docSnap.id,
             date: data.createdAt 
-              ? new Date(data.createdAt).toLocaleDateString('en-NG', { year: 'numeric', month: 'long', day: 'numeric' }) 
-              : new Date().toLocaleDateString('en-NG', { year: 'numeric', month: 'long', day: 'numeric' }),
+              ? new Date(data.createdAt).toLocaleDateString("en-NG", { year: "numeric", month: "long", day: "numeric" }) 
+              : new Date().toLocaleDateString("en-NG", { year: "numeric", month: "long", day: "numeric" }),
             customer: {
-              name: data.shippingAddress?.fullName || data.customerName || 'Valued Customer',
-              email: data.userEmail || 'N/A',
+              name: data.shippingAddress?.fullName || data.customerName || "Valued Customer",
+              email: data.userEmail || "N/A",
               address: data.shippingAddress 
                 ? `${data.shippingAddress.address}, ${data.shippingAddress.city}, ${data.shippingAddress.state}` 
-                : 'Address not provided',
+                : "Address not provided",
             },
-            paymentMethod: 'Paystack / Card',
+            paymentMethod: "Paystack / Card",
             items: Array.isArray(data.items) ? data.items.map((item, index) => ({
               id: item.id || index,
-              name: item.title || item.name || 'Store Item',
+              name: item.title || item.name || "Store Item",
               quantity: item.quantity || item.qty || 1,
               price: Number(item.price || item.unitPrice || 0),
-              image: item.image || item.imageUrl || (Array.isArray(item.images) ? item.images[0] : '/placeholder-apparel.jpg'),
-              size: item.size || 'Standard'
+              image: item.image || item.imageUrl || "/placeholder-apparel.jpg",
+              size: item.size || "Standard"
             })) : [],
             subtotal: Number(data.subtotalAmount || 0),
             shippingFee: Number(data.shippingFee || 0),
@@ -70,11 +69,11 @@ export default function PaymentSuccessPage() {
 
           setOrder(formattedOrder);
         } else {
-          setError('Order details could not be found for this reference.');
+          setError("Order details could not be found for this reference.");
         }
       } catch (err) {
-        console.error('Error fetching order from Firestore:', err);
-        setError('An error occurred while fetching your order details.');
+        console.error("Error fetching order from Firestore:", err);
+        setError("An error occurred while fetching your order details.");
       } finally {
         setLoading(false);
       }
@@ -92,7 +91,7 @@ export default function PaymentSuccessPage() {
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
         <FiLoader className="w-10 h-10 text-indigo-600 animate-spin mb-4" />
         <h2 className="text-lg font-bold text-gray-800">Verifying transaction & loading order...</h2>
-        <p className="text-xs text-gray-500 mt-1">Reference: {reference || 'Searching...'}</p>
+        <p className="text-xs text-gray-500 mt-1">Reference: {reference || "Searching..."}</p>
       </div>
     );
   }
@@ -104,7 +103,7 @@ export default function PaymentSuccessPage() {
           <FiShoppingBag className="w-8 h-8" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Order Not Found</h1>
-        <p className="text-gray-600 max-w-md text-sm mb-6">{error || 'We could not locate this order in our system.'}</p>
+        <p className="text-gray-600 max-w-md text-sm mb-6">{error || "We could not locate this order in our system."}</p>
         <Link
           href="/shop"
           className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors text-sm shadow-sm inline-flex items-center gap-2"
@@ -133,7 +132,7 @@ export default function PaymentSuccessPage() {
           </p>
         </div>
 
-        {/* Action Bar (Hidden when printing) */}
+        {/* Action Bar */}
         <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-100 shadow-sm print:hidden">
           <div className="text-sm">
             <span className="text-gray-500">Transaction Ref: </span>
@@ -152,7 +151,6 @@ export default function PaymentSuccessPage() {
         {/* Receipt Container */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden p-6 sm:p-8 space-y-8">
           
-          {/* Order Info Bar */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pb-6 border-b border-gray-100 text-sm">
             <div>
               <p className="text-gray-400 text-xs uppercase font-medium">Order Date</p>
@@ -173,12 +171,11 @@ export default function PaymentSuccessPage() {
             <div>
               <p className="text-gray-400 text-xs uppercase font-medium">Total Amount</p>
               <p className="font-bold text-indigo-600 mt-1">
-                ₦{order.total.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                ₦{order.total.toLocaleString()}
               </p>
             </div>
           </div>
 
-          {/* Delivery & Shipping Info */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-6 border-b border-gray-100 text-sm">
             <div className="flex gap-3">
               <FiMapPin className="text-indigo-600 text-lg flex-shrink-0 mt-0.5" />
@@ -198,7 +195,6 @@ export default function PaymentSuccessPage() {
             </div>
           </div>
 
-          {/* Items Purchased */}
           <div>
             <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
               <FiShoppingBag className="text-indigo-600" /> Purchased Items
@@ -228,7 +224,6 @@ export default function PaymentSuccessPage() {
             </div>
           </div>
 
-          {/* Pricing Breakdown */}
           <div className="bg-gray-50 p-4 rounded-xl space-y-2 text-sm">
             <div className="flex justify-between text-gray-600">
               <span>Subtotal</span>
@@ -246,7 +241,6 @@ export default function PaymentSuccessPage() {
 
         </div>
 
-        {/* Bottom Navigation Buttons (Hidden when printing) */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center print:hidden">
           <Link
             href="/shop"
@@ -258,5 +252,17 @@ export default function PaymentSuccessPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <FiLoader className="w-8 h-8 text-indigo-600 animate-spin" />
+      </div>
+    }>
+      <PaymentSuccessContent />
+    </Suspense>
   );
 }
