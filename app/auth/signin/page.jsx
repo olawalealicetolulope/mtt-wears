@@ -2,23 +2,9 @@ import React from "react";
 import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa6";
-import { auth, signIn } from "@/auth";
-import { redirect } from "next/navigation";
-import { adminEmails } from "@/lib/authorizeAdmin";
+import { signIn } from "@/auth";
 
 const SignInPage = async () => {
-  const session = await auth();
-  const adminMail = session?.user?.email;
-
-  // 1. Maintain Redirect users if already logged in (Server Side)
-  if (session) {
-    if (!adminEmails.includes(adminMail)) {
-      redirect("/"); // Standard customer redirect
-    } else {
-      redirect("/admin"); // Admin panel redirect
-    }
-  }
-
   // Define input classes
   const inputClasses =
     "w-full px-4 py-3 rounded-md border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm";
@@ -90,7 +76,6 @@ const SignInPage = async () => {
           <form
             action={async () => {
               "use server";
-              // Explicitly direct back to homepage post-login
               await signIn("google", { redirectTo: "/" });
             }}
           >
