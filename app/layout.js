@@ -1,4 +1,5 @@
 import { Geist, Cormorant_Garamond, Montserrat } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import LayoutWrapper from "../components/LayoutWrapper";
 import AuthProvider from "../components/AuthProvider";
@@ -21,7 +22,9 @@ export default function RootLayout({ children }) {
         suppressHydrationWarning
       >
         <AuthProvider>
-          <LayoutWrapper>{children}</LayoutWrapper>
+          <Suspense fallback={null}>
+            <LayoutWrapper>{children}</LayoutWrapper>
+          </Suspense>
         </AuthProvider>
       </body>
     </html>
