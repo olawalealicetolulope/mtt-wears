@@ -2,28 +2,10 @@
 import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import GitHub from "next-auth/providers/github"
-import Nodemailer from "next-auth/providers/nodemailer"
-// ❌ Remove FirestoreAdapter import
-// import { FirestoreAdapter } from "@auth/firebase-adapter"
-import { initializeApp, getApps, getApp, cert } from "firebase-admin/app"
-import { getFirestore } from "firebase-admin/firestore"
-
-// Optimized Firebase Admin singleton initialization for Serverless/Vercel
-const app = !getApps().length
-  ? initializeApp({
-      credential: cert({
-        projectId: process.env.AUTH_FIREBASE_PROJECT_ID,
-        clientEmail: process.env.AUTH_FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.AUTH_FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-      }),
-    })
-  : getApp()
-
-const firestore = getFirestore(app)
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  debug: process.env.NODE_ENV === "development",
-  // ❌ Remove adapter: FirestoreAdapter(firestore), completely
+  debug: true, // Keep debug true temporarily so Vercel logs show the exact failure reason
+  trustHost: true,
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -35,20 +17,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
       allowDangerousEmailAccountLinking: true,
     }),
-    Nodemailer({
-      server: {
-        host: process.env.EMAIL_SERVER_HOST,
-        port: Number(process.env.EMAIL_SERVER_PORT),
-        secure: true,
-        auth: {
-          user: process.env.EMAIL_SERVER_USER,
-          pass: process.env.EMAIL_SERVER_PASSWORD,
-        },
-      },
-      from: process.env.EMAIL_FROM,
-    }),
   ],
-  session: { strategy: "jwt" }, // Keep standard JWT strategy
+  session: { strategy: "jwt" },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
