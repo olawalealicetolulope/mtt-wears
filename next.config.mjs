@@ -5,10 +5,11 @@
 // };
 
 // export default nextConfig;
-/** @type {import('next').Next.js config} */
+// next.config.mjs
 const nextConfig = {
+  // Remove missingSuspenseWithCSRBailout from here:
   experimental: {
-    missingSuspenseWithCSRBailout: false,
+    // missingSuspenseWithCSRBailout: false, <--- Delete this line
   },
 };
 
