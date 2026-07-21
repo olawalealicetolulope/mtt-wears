@@ -3,7 +3,8 @@ import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import GitHub from "next-auth/providers/github"
 import Nodemailer from "next-auth/providers/nodemailer"
-import { FirestoreAdapter } from "@auth/firebase-adapter"
+// ❌ Remove FirestoreAdapter import
+// import { FirestoreAdapter } from "@auth/firebase-adapter"
 import { initializeApp, getApps, getApp, cert } from "firebase-admin/app"
 import { getFirestore } from "firebase-admin/firestore"
 
@@ -22,7 +23,7 @@ const firestore = getFirestore(app)
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   debug: process.env.NODE_ENV === "development",
-  adapter: FirestoreAdapter(firestore),
+  // ❌ Remove adapter: FirestoreAdapter(firestore), completely
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -47,12 +48,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       from: process.env.EMAIL_FROM,
     }),
   ],
-  session: { strategy: "database" }, // <--- Database strategy enabled
+  session: { strategy: "jwt" }, // Keep standard JWT strategy
   callbacks: {
-    // When using the "database" strategy, the session callback receives `user` instead of `token`
-    async session({ session, user }) {
+    async jwt({ token, user }) {
+      if (user) {
+        token.uid = user.id;
+      }
+      return token;
+    },
+    async session({ session, token }) {
       if (session.user) {
-        session.user.uid = user.id;
+        session.user.uid = token.uid;
       }
       return session;
     },
