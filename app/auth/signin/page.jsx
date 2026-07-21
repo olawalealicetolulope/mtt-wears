@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
-import { FaGithub, FaXTwitter } from "react-icons/fa6";
+import { FaGithub } from "react-icons/fa6";
 import { auth, signIn } from "@/auth";
 import { redirect } from "next/navigation";
 import { adminEmails } from "@/lib/authorizeAdmin";
@@ -19,20 +19,20 @@ const SignInPage = async () => {
     }
   }
 
-  // Define input classes to match image_3.png
+  // Define input classes
   const inputClasses =
     "w-full px-4 py-3 rounded-md border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm";
 
-  // Define social button classes to match image_3.png
+  // Define social button classes
   const socialButtonClasses =
     "w-full flex items-center justify-center gap-3 border border-slate-100 rounded-md py-3 px-4 bg-white hover:bg-slate-50 transition font-medium text-slate-700 text-sm";
 
   return (
     <main className="min-h-screen w-full bg-slate-950 flex items-center justify-center p-4">
-      {/* Centered Sign-In Card (image_3.png) */}
+      {/* Centered Sign-In Card */}
       <section className="w-full max-w-sm bg-white rounded-xl shadow-xl p-8 border border-slate-100 flex flex-col items-center">
         
-        {/* Updated Heading & Copy */}
+        {/* Heading & Copy */}
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
             Welcome to MTT Wears
@@ -46,8 +46,10 @@ const SignInPage = async () => {
         <form
           action={async (formData) => {
             "use server";
-            // Important: v5 uses Nodemailer provider, update accordingly if different
-            await signIn("nodemailer", { email: formData.get("email") });
+            await signIn("nodemailer", { 
+              email: formData.get("email"),
+              redirectTo: "/" 
+            });
           }}
           className="space-y-3 w-full"
         >
@@ -73,7 +75,7 @@ const SignInPage = async () => {
           </button>
         </form>
 
-        {/* Updated Divider */}
+        {/* Divider */}
         <div className="relative my-6 flex items-center justify-center w-full">
           <div className="border-t border-slate-100 w-full" />
           <span className="bg-white px-3 text-xs font-normal text-slate-400 absolute">
@@ -81,14 +83,15 @@ const SignInPage = async () => {
           </span>
         </div>
 
-        {/* Social Auth Buttons (image_3.png styled) */}
+        {/* Social Auth Buttons */}
         <div className="space-y-3 w-full">
           
           {/* Google */}
           <form
             action={async () => {
               "use server";
-              await signIn("google");
+              // Explicitly direct back to homepage post-login
+              await signIn("google", { redirectTo: "/" });
             }}
           >
             <button type="submit" className={socialButtonClasses}>
@@ -101,7 +104,7 @@ const SignInPage = async () => {
           <form
             action={async () => {
               "use server";
-              await signIn("github");
+              await signIn("github", { redirectTo: "/" });
             }}
           >
             <button type="submit" className={socialButtonClasses}>
@@ -110,22 +113,9 @@ const SignInPage = async () => {
             </button>
           </form>
 
-          {/* Twitter / X */}
-          <form
-            action={async () => {
-              "use server";
-              await signIn("twitter");
-            }}
-          >
-            <button type="submit" className={socialButtonClasses}>
-              <FaXTwitter className="text-lg text-slate-900" />
-              <span>Continue with X (Twitter)</span>
-            </button>
-          </form>
-
         </div>
 
-        {/* Refined Footer Legal Terms */}
+        {/* Footer Legal Terms */}
         <p className="text-center text-[11px] leading-relaxed text-slate-400 mt-8 w-full">
           By continuing, you agree to our{" "}
           <Link href="/terms" className="text-slate-900 font-semibold hover:underline">

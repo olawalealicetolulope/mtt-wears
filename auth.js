@@ -4,26 +4,24 @@ import Google from "next-auth/providers/google"
 import GitHub from "next-auth/providers/github"
 import Nodemailer from "next-auth/providers/nodemailer"
 import { FirestoreAdapter } from "@auth/firebase-adapter"
-import { initializeApp, cert, getApps } from "firebase-admin/app"
+import { initializeApp, getApps, getApp, cert } from "firebase-admin/app"
 import { getFirestore } from "firebase-admin/firestore"
 
-// Initialize Firebase Admin
-const app =
-  getApps().length === 0
-    ? initializeApp({
-        credential: cert({
-          projectId: process.env.AUTH_FIREBASE_PROJECT_ID,
-          clientEmail: process.env.AUTH_FIREBASE_CLIENT_EMAIL,
-          privateKey: process.env.AUTH_FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-        }),
-      })
-    : getApps()[0]
+// Optimized Firebase Admin singleton initialization for Serverless/Vercel
+const app = !getApps().length
+  ? initializeApp({
+      credential: cert({
+        projectId: process.env.AUTH_FIREBASE_PROJECT_ID,
+        clientEmail: process.env.AUTH_FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.AUTH_FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      }),
+    })
+  : getApp()
 
 const firestore = getFirestore(app)
 
-// Export v5 methods
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  debug: true,
+  debug: process.env.NODE_ENV === "development",
   adapter: FirestoreAdapter(firestore),
   providers: [
     Google({
